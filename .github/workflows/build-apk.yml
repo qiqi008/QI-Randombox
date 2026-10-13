@@ -1,0 +1,45 @@
+name: Build QI Randombox APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'QI_Randombox_Android_Project.zip'
+      - '.github/workflows/build-apk.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      - name: Extract project
+        run: |
+          mkdir project
+          unzip -q QI_Randombox_Android_Project.zip -d project
+
+      - name: Build APK
+        working-directory: project/QI_Randombox
+        run: gradle assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: QI-Randombox-debug-APK
+          path: project/QI_Randombox/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
